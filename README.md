@@ -14,4 +14,6 @@ After I had concluded that there was a correlation between age and salary with a
 
 # Conclusion 
 I found that from the analysis executed, old customers who have previously spent over the mean amount spent were 84% likely to spend over the mean amount spent again. In marketing, this would be a situation where the marketing department could segement and further target the older customers who have already spent over the mean. 
-![test](C:\Users\bnobl\Desktop)
+<img src="2.png"
+     alt="Markdown Monster icon"
+     style="float: left; margin-right: 10px;" />
