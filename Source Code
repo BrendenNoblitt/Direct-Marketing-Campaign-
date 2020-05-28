@@ -1,0 +1,83 @@
+											/*** SETUP ***/
+
+libname direct XLSX "/home/u48754152/Direct Marketing Campaign/DirectMarketing.xlsx";
+
+proc print data=direct.directmarketing (obs=10);
+run;
+
+proc means data=direct.directmarketing;
+	var amountspent;
+run;
+
+									/*** EXPLORATORY DATA ANALYSIS ***/
+/*Which variables most significantly correlate to amount spent?*/ 
+
+proc univariate data=direct.directmarketing;
+	var amountspent;
+run;
+
+/*Salary to Amount Spent Correlation*/
+proc corr data=direct.directmarketing plots=scatter;
+	var salary amountspent;
+run;
+/*Correlation coefficient of 0.69, moderately high*/ 
+
+proc corr data=direct.directmarketing plots=matrix(histogram);
+	var catalogs amountspent;
+run;
+/*Correlation coefficient of 0.47, moderately low*/
+
+proc corr data=direct.directmarketing plots=scatter;
+	var children salary amountspent;
+run;
+/*Correlation coefficient of -0.22, no correlation*/
+
+										/*** MODEL BUILDING ***/
+data train_marketing;
+	set direct.directmarketing;
+	keep Salary Age History amountspent Test_Group;
+if amountspent < 1216 then Test_Group=0;
+if amountspent > 1217 then Test_Group = 1;
+run;
+
+proc freq data=train_marketing;
+	tables test_group;
+run;
+/*60% of customers spent below the average while 40% spent above the average*/
+
+proc logistic data = train_marketing desc; 
+class age;
+model test_group = age salary;
+output out = marketing_output p = pred_marketing lower = low upper = upp;
+/* Fail to Reject null hypothesis with an associated p value of 0.69 for the middle age group*/
+
+
+data model_data;
+	set marketing_output;
+	keep age salary test_group pred_marketing prediction;
+		if pred_marketing < 0.5 then Prediction = 'Not Likely';
+		if pred_marketing > 0.5 then Prediction = 'Likely';
+run;
+
+proc freq data = model_data order=freq;
+	tables Prediction/ 
+       plots=freqplot(twoway=stacked orient=horizontal);
+run;
+
+/*DATA MINING FROM MODEL*/
+proc freq data=model_data;
+	tables age*prediction;
+	where age='Old';
+proc freq data=model_data;
+	tables age*prediction;
+	where age='Middle';
+proc freq data=model_data;
+	tables age*prediction;
+	where age='Young';
+proc freq data=model_data;
+	tables test_group*prediction;
+	where test_group=0;
+proc freq data=model_data;
+	tables test_group*prediction;
+	where test_group=1;
+run;
